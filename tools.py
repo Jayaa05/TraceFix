@@ -184,3 +184,29 @@ if __name__ == "__main__":
     from pprint import pprint
 
     pprint(investigate_incident("INC-001"))
+
+def create_diagnostic_plan(investigation):
+    """Build diagnostic actions from linked runbook evidence."""
+
+    if investigation.get("error"):
+        return []
+
+    plan = []
+
+    for runbook in investigation.get("runbooks", []):
+        steps = runbook.get("steps", "")
+
+        if isinstance(steps, str):
+            steps = [step.strip() for step in steps.split(",") if step.strip()]
+        elif not isinstance(steps, list):
+            steps = []
+
+        for step in steps:
+            plan.append({
+                "action": step,
+                "source": runbook.get("id", "Unknown runbook"),
+                "runbook_title": runbook.get("title", "Untitled runbook"),
+                "status": "Recommended — not yet executed",
+            })
+
+    return plan
