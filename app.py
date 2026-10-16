@@ -1,7 +1,7 @@
 
 import html
 import streamlit as st
-from tools import investigate_incident
+from tools import investigate_incident, create_diagnostic_plan
 
 
 # =========================================================
@@ -624,6 +624,30 @@ if run:
             # -------------------------------------------------
             # RUNBOOK
             # -------------------------------------------------
+            
+            # Evidence-backed diagnostic action plan
+            st.markdown("## Diagnostic action plan")
+
+            diagnostic_plan = create_diagnostic_plan(result)
+
+            if diagnostic_plan:
+                st.caption(
+                    "Recommended checks from linked FalkorDB runbooks. "
+                    "No diagnostic action has been executed automatically."
+                )
+
+                for index, item in enumerate(diagnostic_plan, start=1):
+                    st.markdown(f"**{index}. {item['action']}**")
+                    st.caption(
+                        f"Source: {item['source']} · "
+                        f"{item['runbook_title']} · {item['status']}"
+                    )
+            else:
+                st.info(
+                    "No diagnostic actions are available from linked runbooks."
+                )
+
+
             st.markdown("## Runbook & response guidance")
 
             if runbooks:
