@@ -157,8 +157,7 @@ def investigate_incident(incident_id):
         else:
             indirect_dependents.add(path[0])
 
-    # A service reachable by both a direct and longer path is
-    # classified as direct rather than indirect.
+    # Prefer direct classification if both direct and longer paths exist.
     indirect_dependents -= direct_dependents
 
     return {
@@ -177,13 +176,8 @@ def investigate_incident(incident_id):
 
 
 # --------------------------------------------------
-# 7. TEST THE INVESTIGATION
+# 7. CREATE DIAGNOSTIC PLAN
 # --------------------------------------------------
-
-if __name__ == "__main__":
-    from pprint import pprint
-
-    pprint(investigate_incident("INC-001"))
 
 def create_diagnostic_plan(investigation):
     """Build diagnostic actions from linked runbook evidence."""
@@ -197,16 +191,32 @@ def create_diagnostic_plan(investigation):
         steps = runbook.get("steps", "")
 
         if isinstance(steps, str):
-            steps = [step.strip() for step in steps.split(",") if step.strip()]
+            # Preserve the original runbook wording.
+            steps = [steps.strip()] if steps.strip() else []
         elif not isinstance(steps, list):
             steps = []
 
         for step in steps:
+            if not isinstance(step, str) or not step.strip():
+                continue
+
             plan.append({
-                "action": step,
+                "action": step.strip(),
                 "source": runbook.get("id", "Unknown runbook"),
-                "runbook_title": runbook.get("title", "Untitled runbook"),
+                "runbook_title": runbook.get(
+                    "title", "Untitled runbook"
+                ),
                 "status": "Recommended — not yet executed",
             })
 
     return plan
+
+
+# --------------------------------------------------
+# 8. TEST THE INVESTIGATION
+# --------------------------------------------------
+
+if __name__ == "__main__":
+    from pprint import pprint
+
+    pprint(investigate_incident("INC-001"))
