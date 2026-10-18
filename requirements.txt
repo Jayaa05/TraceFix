@@ -1,0 +1,4 @@
+streamlit
+falkordb
+python-dotenv
+groq
